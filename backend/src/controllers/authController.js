@@ -26,19 +26,14 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Hash password (if not handled in model middleware)
-        // Assuming the model handles hashing or we do it here. 
-        // Checking User.js (not shown, but usually it's best to verify). 
-        // Based on previous code, it seemed standard. I'll rely on model pre-save or do it here if needed.
-        // Wait, the previous code just did User.create with plain password?
-        // Let's assume the earlier code was incomplete or model handles it.
-        // Actually, to be safe, I should verify if model has pre-save hook.
-        // But for now, I'll stick to the logic: create user -> return token.
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
         const user = await User.create({
             name,
             email,
-            password,
+            password: hashedPassword,
             businessName,
             city
         });
@@ -67,18 +62,9 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+password');
 
-        // Check password match (assuming user.matchPassword method exists or simple comparison if plaintext)
-        // I will view User.js next to be sure about password hashing.
-        // For now using `matchPassword` method assumption or direct compare if not hashed (bad practice but matching existing state).
-        // Safest is to use bcrypt here directly if unsure.
-        // Let's assume standard `await user.matchPassword(password)` pattern for now or bcrypt.compare.
-
-        // REVISIT: I need to check User.js to see how password is stored.
-        // For now, I will write generic code that assumes a method or compares.
-
-        if (user && (await user.matchPassword(password))) {
+        if (user && (await bcrypt.compare(password, user.password))) {
             res.json({
                 _id: user._id,
                 name: user.name,

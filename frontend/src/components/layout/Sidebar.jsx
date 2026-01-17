@@ -7,7 +7,7 @@ export default function Sidebar() {
     const location = useLocation();
 
     const links = [
-        { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Command Center', href: '/command', icon: MessageSquare }, // Chat
         { name: 'Orders', href: '/orders', icon: ShoppingCart },
         { name: 'Inventory', href: '/inventory', icon: Package },

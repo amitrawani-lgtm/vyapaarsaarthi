@@ -32,7 +32,7 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Server Error', error: err.message });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT =  8080;
 
 if (require.main === module) {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
