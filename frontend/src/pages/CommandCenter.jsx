@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Mic, Image as ImageIcon, Loader2, User, Bot, Paperclip } from 'lucide-react';
 import { cn } from '../lib/utils';
+import api from '../api/axios';
 
 export default function CommandCenter() {
     const [messages, setMessages] = useState([
@@ -28,19 +29,12 @@ export default function CommandCenter() {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/ai/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMessage.content }),
-            });
+            const response = await api.post('/ai/chat', { message: userMessage.content });
 
-            const data = await response.json();
+            const data = response.data;
 
-            if (response.ok) {
-                setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.response, type: 'text' }]);
-            } else {
-                throw new Error(data.message || 'Failed to get response');
-            }
+            setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.response, type: 'text' }]);
+
         } catch (error) {
             setMessages(prev => [...prev, { id: Date.now() + 1, role: 'error', content: "Error: " + error.message, type: 'text' }]);
         } finally {
@@ -72,18 +66,16 @@ export default function CommandCenter() {
         // formData.append('message', 'Analyze this');
 
         try {
-            const response = await fetch('http://localhost:5000/api/ai/process', {
-                method: 'POST',
-                body: formData, // Content-Type is auto-set
+            const response = await api.post('/ai/process', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
 
-            const data = await response.json();
+            const data = response.data;
 
-            if (response.ok) {
-                setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.response, type: 'text' }]);
-            } else {
-                throw new Error(data.message || 'Failed to upload');
-            }
+            setMessages(prev => [...prev, { id: Date.now() + 1, role: 'assistant', content: data.response, type: 'text' }]);
+
         } catch (error) {
             setMessages(prev => [...prev, { id: Date.now() + 1, role: 'error', content: "Error: " + error.message, type: 'text' }]);
         } finally {

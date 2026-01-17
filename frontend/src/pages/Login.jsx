@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Loader2, LogIn } from 'lucide-react';
+import api from '../api/axios';
 
 export default function Login() {
     const [isLogin, setIsLogin] = useState(true);
@@ -14,23 +15,21 @@ export default function Login() {
         setError('');
         setLoading(true);
 
-        const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+        const endpoint = isLogin ? '/auth/login' : '/auth/register';
 
         try {
-            const res = await fetch(`http://localhost:5000${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
+            const res = await api.post(endpoint, formData);
 
-            const data = await res.json();
-
-            if (!res.ok) throw new Error(data.message || 'Authentication failed');
+            const data = res.data;
 
             // Success
+            localStorage.setItem('token', data.token);
+            // Optionally store user info if needed elsewhere
+            localStorage.setItem('userInfo', JSON.stringify(data));
+
             navigate('/dashboard');
         } catch (err) {
-            setError(err.message);
+            setError(err.response?.data?.message || err.message);
         } finally {
             setLoading(false);
         }
@@ -90,6 +89,32 @@ export default function Login() {
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                         />
                     </div>
+
+                    <div>
+                        <label className="block text-slate-300 text-sm font-medium mb-1">businessName</label>
+                        <input
+                            type="text"
+                            required
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                            placeholder="Your Name"
+                            value={formData.businessName}
+                            onChange={(e) => setFormData({ ...formData, businessName: e.target.value })}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-slate-300 text-sm font-medium mb-1">city</label>
+                        <input
+                            type="text"
+                            required
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                            placeholder="Your Name"
+                            value={formData.city}
+                            onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        />
+                    </div>
+
+
 
                     <button
                         type="submit"

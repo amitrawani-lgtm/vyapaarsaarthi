@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, ShoppingCart, MessageSquare, Package, BarChart2, Settings, Mic, LogOut } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import api from '../../api/axios';
 
 export default function Sidebar() {
     const location = useLocation();
@@ -13,13 +14,13 @@ export default function Sidebar() {
         { name: 'Analytics', href: '/analytics', icon: BarChart2 },
     ];
 
-    const handleLogout = async () => {
-        try {
-            await fetch('http://localhost:5000/api/auth/logout', { method: 'POST' });
-            window.location.href = '/login';
-        } catch (error) {
-            console.error('Logout failed', error);
-        }
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('userInfo');
+        window.location.href = '/login';
+
+        // Optional: Call backend to log out (fire and forget as it is stateless now)
+        api.post('/auth/logout').catch(console.error);
     };
 
     return (

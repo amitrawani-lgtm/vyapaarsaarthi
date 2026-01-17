@@ -3,12 +3,6 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
-const session = require('express-session');
-const passport = require('passport');
-
-// Passport Config
-require('./config/passport')(passport);
-
 const app = express();
 
 // Middleware
@@ -19,23 +13,13 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'secret',
-    resave: false,
-    saveUninitialized: false
-}));
-
-// Passport Middleware
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Database Connection
 connectDB();
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
 
 // Basic Routes
 app.get('/', (req, res) => {

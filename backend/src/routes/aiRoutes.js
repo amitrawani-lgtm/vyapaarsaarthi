@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const { generateResponse } = require('../services/aiService');
-const { ensureAuthenticated } = require('../middleware/authMiddleware');
+const { protect } = require('../middleware/authMiddleware');
 
 // Configure Multer for memory storage
 const upload = multer({
@@ -13,7 +13,7 @@ const upload = multer({
 // @route   POST /api/ai/chat
 // @desc    Process text chat
 // @access  Private
-router.post('/chat', ensureAuthenticated, async (req, res) => {
+router.post('/chat', protect, async (req, res) => {
     try {
         const { message } = req.body;
         // Pass userId to service
@@ -27,7 +27,7 @@ router.post('/chat', ensureAuthenticated, async (req, res) => {
 // @route   POST /api/ai/process
 // @desc    Process multimodal input (image/audio)
 // @access  Private
-router.post('/process', ensureAuthenticated, upload.single('file'), async (req, res) => {
+router.post('/process', protect, upload.single('file'), async (req, res) => {
     try {
         const { message } = req.body;
         const file = req.file;
