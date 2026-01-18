@@ -2,7 +2,7 @@ import { Bell, Search, User } from 'lucide-react';
 
 export default function Header() {
     return (
-        <header className="h-16 px-8 flex items-center justify-between bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-10 transition-all">
+        <header className="h-16 px-8 flex items-center justify-between bg-white border-b border-slate-200 sticky top-0 z-10 transition-all">
             <div className="flex items-center">
                 {/* Placeholder for page title or breadcrumbs */}
                 <h2 className="text-xl font-semibold text-slate-800">Overview</h2>
@@ -14,12 +14,12 @@ export default function Header() {
                     <input
                         type="text"
                         placeholder="Search..."
-                        className="pl-10 pr-4 py-2 rounded-full border border-slate-200 bg-slate-50 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm w-64 transition-all"
+                        className="pl-10 pr-4 py-2 rounded-full border border-slate-200 bg-slate-50 text-slate-900 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none text-sm w-64 transition-all placeholder:text-slate-400"
                     />
                 </div>
 
                 <button className="relative p-2 rounded-full hover:bg-slate-100 transition-colors">
-                    <Bell className="w-5 h-5 text-slate-600" />
+                    <Bell className="w-5 h-5 text-slate-500 hover:text-slate-900" />
                     <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
                 </button>
 
@@ -28,7 +28,7 @@ export default function Header() {
                         <p className="text-sm font-medium text-slate-900">Amit Web Works</p>
                         <p className="text-xs text-slate-500">Admin</p>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-bold shadow-md ring-2 ring-white">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold ring-2 ring-white">
                         A
                     </div>
                 </div>

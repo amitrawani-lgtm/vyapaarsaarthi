@@ -5,23 +5,10 @@ import CommandCenter from "./pages/CommandCenter";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { Orders } from "./pages/Orders";
+import Inventory from "./pages/Inventory";
+import Analytics from "./pages/Analytic";
 
-// Placeholder components
-const Orders = () => (
-  <div className="p-10 text-xl text-slate-500 text-center">
-    📦 Orders Management Coming Soon...
-  </div>
-);
-const Inventory = () => (
-  <div className="p-10 text-xl text-slate-500 text-center">
-    📋 Inventory Tracking Coming Soon...
-  </div>
-);
-const Analytics = () => (
-  <div className="p-10 text-xl text-slate-500 text-center">
-    📊 Analytics Dashboard Coming Soon...
-  </div>
-);
 
 function App() {
   return (
