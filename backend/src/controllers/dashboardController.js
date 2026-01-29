@@ -1,6 +1,5 @@
 import { Order } from "../models/Order.js";
 import { Product } from "../models/Product.js";
-
 // @desc    Get dashboard statistics
 // @route   GET /api/dashboard/stats
 // @access  Private

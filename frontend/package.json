@@ -11,6 +11,11 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.7",
+    "@mui/material": "^7.3.7",
+    "@mui/x-charts": "^8.26.0",
     "axios": "^1.13.2",
     "clsx": "^2.1.1",
     "lucide-react": "^0.562.0",

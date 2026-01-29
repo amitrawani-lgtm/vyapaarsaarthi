@@ -1,195 +1,174 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import * as productService from "./productService.js";
-import * as orderService from "./orderService.js";
+import axios from "axios";
 
-// Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Use a model+method that is widely available for text generation. If you need a different model, use ListModels to discover available models for your account.
+const GEMINI_URL =
+  "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
-// Define Tools
-const tools = [
-  {
-    functionDeclarations: [
-      {
-        name: "add_inventory",
-        description:
-          "Add new product to inventory or update stock of existing product.",
-        parameters: {
-          type: "OBJECT",
-          properties: {
-            name: { type: "STRING", description: "Name of the product" },
-            quantity: { type: "NUMBER", description: "Quantity to add" },
-            price: {
-              type: "NUMBER",
-              description: "Price per unit (if new product)",
-            },
-            category: {
-              type: "STRING",
-              description: "Category of the product",
-            },
-          },
-          required: ["name", "quantity"],
-        },
-      },
-      {
-        name: "check_inventory",
-        description: "Check stock level of products.",
-        parameters: {
-          type: "OBJECT",
-          properties: {
-            query: {
-              type: "STRING",
-              description:
-                "Product name to search for (optional, lists all if empty)",
-            },
-          },
-        },
-      },
-      {
-        name: "create_order",
-        description: "Create a new sales order.",
-        parameters: {
-          type: "OBJECT",
-          properties: {
-            customerName: { type: "STRING", description: "Name of customer" },
-            items: {
-              type: "ARRAY",
-              items: {
-                type: "OBJECT",
-                properties: {
-                  name: { type: "STRING", description: "Product name" },
-                  quantity: { type: "NUMBER", description: "Quantity" },
-                },
-                required: ["name", "quantity"],
-              },
-            },
-          },
-          required: ["items"],
-        },
-      },
-    ],
-  },
-];
+const isKeyPresent = (key) =>
+  typeof key === "string" && key.trim() !== "" && !key.includes("YOUR");
 
-const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
-  tools: tools,
+// Mock implementation for local dev / tests
+const mockParseWhatsappOrder = async (
+  message,
+  buyerPhone,
+  shopkeeperPhone,
+) => ({
+  buyerPhone,
+  shopkeeperPhone,
+  items: [
+    {
+      name: String(message).match(/keyboard|keyboards/i)
+        ? "keyboards"
+        : "unknown",
+      quantity: 5,
+    },
+  ],
 });
 
-/**
- * Generate response from Gemini model with Function Calling
- */
-const generateResponse = async (prompt, files = [], userId) => {
-  try {
-    const chat = model.startChat({
-      history: [
-        {
-          role: "user",
-          parts: [
-            {
-              text: "You are VyapaarSaarthi, an intelligent business assistant for MSMEs. You help manage inventory, orders, and provide insights. Always be polite and helpful. Speak in Hinglish (Hindi+English mix) if appropriate.",
-            },
-          ],
-        },
-        {
-          role: "model",
-          parts: [
-            {
-              text: "Namaste! Main VyapaarSaarthi hu. Bataiye aaj main aapki kya madad kar sakta hu?",
-            },
-          ],
-        },
-      ],
-    });
+export const parseWhatsappOrder = (function createParser() {
+  const key = process.env.GEMINI_API_KEY;
+  const useMock =
+    process.env.AI_MOCK === "1" || process.env.NODE_ENV === "test";
 
-    const parts = [];
-    if (prompt) parts.push({ text: prompt });
-
-    // Add files
-    if (files.length > 0) {
-      files.forEach((file) => {
-        parts.push({
-          inlineData: {
-            data: file.buffer.toString("base64"),
-            mimeType: file.mimetype,
-          },
-        });
-      });
+  if (!isKeyPresent(key)) {
+    if (useMock) {
+      return mockParseWhatsappOrder;
     }
 
-    const result = await chat.sendMessage(parts);
-    const response = await result.response;
+    // return a function that throws a helpful error when called
+    return async () => {
+      throw new Error(
+        "GEMINI_API_KEY is missing or invalid. Set GEMINI_API_KEY in backend/.env or set $env:GEMINI_API_KEY before calling the AI service.",
+      );
+    };
+  }
 
-    // Check for function calls
-    const functionCalls = response.functionCalls();
+  // Real implementation (key is present)
+  return async (message, buyerPhone, shopkeeperPhone) => {
+    const prompt = `\nConvert the following WhatsApp order into JSON.\n\nRules:\n- Output ONLY valid JSON\n- Quantity must be a number\n- If quantity missing, assume 1\n\nMessage:\n"${message}"\n\nOutput format:\n{\n  \"buyerPhone\": ${buyerPhone},\n  \"shopkeeperPhone\": ${shopkeeperPhone},\n  \"items\": [\n    {\n      \"name\": \"item name\",\n      \"quantity\": number\n    }\n  ]\n}\n`;
 
-    if (functionCalls && functionCalls.length > 0) {
-      // Execute first function call (simplify for V1)
-      const call = functionCalls[0];
-      const { name, args } = call;
-      let apiResponse = null;
+    try {
+      // helper that attempts the configured endpoint first, then falls back to ListModels to discover a compatible model/method
+      const callCompatibleModel = async (endpointWithQuery, body) => {
+        // try the configured endpoint first
+        try {
+          return await axios.post(endpointWithQuery, body);
+        } catch (err) {
+          if (!err?.response || err.response.status !== 404) throw err; // rethrow non-404
+        }
 
-      try {
-        if (name === "add_inventory") {
-          // Check if updating or adding new
-          // For simplicity, try updateStock first, if fails then addProduct (if price provided)
-          // Simplified logic: Assume addProduct if price is there, updateStock otherwise
-          if (args.price) {
-            apiResponse = await productService.addProduct(args, userId);
-            apiResponse = `Added new product: ${apiResponse.name}`;
-          } else {
+        // ListModels fallback
+        const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`;
+        const lm = await axios.get(listUrl);
+        const models = lm?.data?.models ?? [];
+        const prefer = ["flash", "pro", "gemini"];
+        const sorted = models.slice().sort((a, b) => {
+          const an = String(a.name || a).toLowerCase();
+          const bn = String(b.name || b).toLowerCase();
+          const ai = prefer.findIndex((p) => an.includes(p));
+          const bi = prefer.findIndex((p) => bn.includes(p));
+          return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+        });
+
+        const candidateMethods = [
+          {
+            method: "generateContent",
+            bodyFactory: (p) => ({ contents: [{ parts: [{ text: p }] }] }),
+          },
+          {
+            method: "generateText",
+            bodyFactory: (p) => ({ instances: [{ content: p }] }),
+          },
+        ];
+
+        for (const m of sorted) {
+          const modelName = m?.name || m; // e.g. "models/gemini-1.5-flash"
+          // modelName usually comes as "models/foo". The endpoint construction below expects just "foo" if we used the old logic,
+          // but v1beta usually works with "models/foo:generateContent".
+          // The old code did `models/${modelName}:${cm.method}`.
+          // If `modelName` is "models/text-bison-001", then `models/models/text-bison-001` is wrong.
+          // API returns "name": "models/gemini-pro".
+          // Let's strip "models/" if present to be safe, or just rely on the fallback logic being robust.
+          // Actually, simply constructing the URL correctly is better.
+
+          let cleanName = modelName.replace(/^models\//, "");
+
+          if (!cleanName) continue;
+          for (const cm of candidateMethods) {
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${cleanName}:${cm.method}`;
             try {
-              apiResponse = await productService.updateStock(
-                args.name,
-                args.quantity,
-                userId,
+              return await axios.post(
+                endpoint + `?key=${process.env.GEMINI_API_KEY}`,
+                cm.bodyFactory(
+                  body?.contents?.[0]?.parts?.[0]?.text ?? body?.instances?.[0]?.content ?? body
+                ),
               );
-              apiResponse = `Updated stock for ${apiResponse.name}. New stock: ${apiResponse.stock}`;
-            } catch (stockError) {
-              if (stockError.message.includes("not found")) {
-                apiResponse = `Product '${args.name}' not found. To create it, please provide the price (e.g., "Add ${args.quantity} ${args.name} at 100 rupees").`;
-              } else {
-                throw stockError;
-              }
+            } catch (err) {
+              if (!err?.response || err.response.status !== 404) throw err;
+              // otherwise try next
             }
           }
-        } else if (name === "check_inventory") {
-          const products = await productService.getProducts(
-            userId,
-            args.query ? { name: { $regex: new RegExp(args.query, "i") } } : {},
-          );
-          apiResponse =
-            products
-              .map((p) => `${p.name}: ${p.stock} units (₹${p.price})`)
-              .join("\n") || "No products found.";
-        } else if (name === "create_order") {
-          const order = await orderService.createOrder(args, userId);
-          apiResponse = `Order created! Total: ₹${order.totalAmount}. Order ID: ${order._id}`;
         }
-      } catch (err) {
-        apiResponse = `Error executing ${name}: ${err.message}`;
+
+        throw new Error("No compatible model/method found via ListModels");
+      };
+
+      const res = await callCompatibleModel(
+        `${GEMINI_URL}?key=${process.env.GEMINI_API_KEY}`,
+        { contents: [{ parts: [{ text: prompt }] }] },
+      );
+
+      // support multiple possible response shapes (defensive)
+      const cand =
+        res?.data?.candidates?.[0] ??
+        res?.data?.candidate ??
+        res?.data?.output?.[0];
+      const rawCandidates = [
+        cand?.content?.parts?.[0]?.text,
+        cand?.content?.[0]?.text,
+        cand?.output,
+        cand?.outputText,
+        cand?.text,
+        res?.data?.output?.[0]?.content?.[0]?.text,
+      ];
+
+      let raw =
+        rawCandidates.find(
+          (x) => typeof x === "string" && x?.trim?.().length > 0,
+        ) ?? null;
+
+      if (!raw) {
+        const serverMsg = res?.data ?? "no body";
+        throw new Error(
+          `Unexpected Gemini response shape: ${JSON.stringify(serverMsg)}`,
+        );
       }
 
-      // Send function result back to model
-      const result2 = await chat.sendMessage([
-        {
-          functionResponse: {
-            name: name,
-            response: { result: apiResponse },
-          },
-        },
-      ]);
-      return result2.response.text();
+      // If the model returned extra commentary + JSON, extract the first JSON object substring
+      if (!raw.trim().startsWith("{")) {
+        const firstBrace = raw.indexOf("{");
+        const lastBrace = raw.lastIndexOf("}");
+        if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+          raw = raw.slice(firstBrace, lastBrace + 1);
+        }
+      }
+
+      try {
+        return JSON.parse(raw);
+      } catch (err) {
+        throw new Error(
+          `Failed to parse Gemini output as JSON: ${err.message}. Output (truncated): ${String(raw).slice(0, 200)}`,
+        );
+      }
+    } catch (err) {
+      // surface helpful message for axios errors
+      if (err?.response?.data) {
+        const info = err.response.data;
+        throw new Error(
+          `Gemini API error (status ${err.response.status}): ${JSON.stringify(info)}`,
+        );
+      }
+      throw err;
     }
-
-    return response.text();
-  } catch (error) {
-    console.error("AI Service Error:", error);
-    return (
-      "Maaf kijiye, kuch gadbad ho gayi. Kripya punah prayas karein. (Error: " +
-      error.message +
-      ")"
-    );
-  }
-};
-
-export { generateResponse };
+  };
+})();

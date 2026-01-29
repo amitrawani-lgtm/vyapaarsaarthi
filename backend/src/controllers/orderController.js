@@ -55,6 +55,7 @@ export const createOrder = async (req, res) => {
     items: orderItems,
     totalAmount,
     shopkeeper: shopkeeper._id,
+    status: "completed"
   });
   res.status(201).json(order);
 };

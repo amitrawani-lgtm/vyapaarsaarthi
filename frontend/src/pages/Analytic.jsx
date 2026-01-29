@@ -8,6 +8,21 @@ import {
   ArrowDownRight,
 } from "lucide-react";
 
+import Box from '@mui/material/Box';
+import { BarChart } from '@mui/x-charts/BarChart';
+
+const Profit = [600,650,620,700,780,1050,850];
+const Revenue = [6500,7200,  6800,  7500,  8200,  11000, 9000 ];
+const xLabels = [
+  'MON',
+  'TUE',
+  'WED',
+  'THU',
+  'FRI',
+  'SAT',
+  'SUN',
+];
+
 export default function Analytics() {
   return (
     <div className="space-y-6">
@@ -83,41 +98,17 @@ export default function Analytics() {
           </div>
 
           {/* CSS Bar Chart Simulation */}
-          <div className="h-64 flex items-end justify-between gap-2 sm:gap-4 px-2">
-            {/* Bars (sanitized for rough/incomplete data) */}
-            {(() => {
-              const raw = [40, 65, 45, 80, 55, 90, 70]; // replace with real data source when available
-              const labels = ["M", "T", "W", "T", "F", "S", "S"];
-              return raw.map((r, i) => {
-                const n = Number(r);
-                const height = Number.isFinite(n)
-                  ? Math.min(100, Math.max(0, Math.round(n)))
-                  : 0; // clamp 0-100
-                const label = labels[i] ?? `#${i + 1}`;
-                return (
-                  <div
-                    key={`${label}-${i}`}
-                    className="flex-1 flex flex-col justify-end group cursor-pointer"
-                    title={`${label}: ${Number.isFinite(n) ? n : 0}`}
-                  >
-                    <div
-                      className="relative w-full bg-slate-100 rounded-t-lg transition-all duration-300 group-hover:bg-slate-200 overflow-hidden"
-                      style={{ height: "100%" }}
-                    >
-                      <div
-                        className="absolute bottom-0 w-full bg-blue-600 rounded-t-lg transition-all duration-500 group-hover:bg-blue-500"
-                        style={{ height: `${height}%` }}
-                      />
-                    </div>
-                    <span className="text-xs text-slate-500 text-center mt-2 font-medium">
-                      {label}
-                    </span>
-                  </div>
-                );
-              });
-            })()}
-          </div>
-        </div>
+          <Box sx={{ width: '100%', height: 300 }}>
+          <BarChart
+           series={[
+          { data: Revenue, label: 'Revenue', id: 'pvId' },
+          { data: Profit, label: 'Profit', id: 'uvId' },
+          ]}
+            xAxis={[{ data: xLabels, height: 28 }]}
+            yAxis={[{ width: 50 }]}
+          />
+          </Box>
+       </div>
 
         {/* Top Products / Doughnut */}
         <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
