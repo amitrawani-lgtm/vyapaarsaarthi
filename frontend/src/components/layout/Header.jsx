@@ -1,6 +1,10 @@
-import { Bell, Search, User } from 'lucide-react';
+import { Bell, Search, User, UserStar } from 'lucide-react';
+import { useState } from 'react';
 
 export default function Header() {
+    const userInfoStr = localStorage.getItem("userInfo");
+    const userInfo = userInfoStr ? JSON.parse(userInfoStr) : { name: "User" };
+    const [name,setName] = useState(userInfo.name);
     return (
         <header className="h-16 px-8 flex items-center justify-between bg-white border-b border-slate-200 sticky top-0 z-10 transition-all">
             <div className="flex items-center">
@@ -25,11 +29,11 @@ export default function Header() {
 
                 <div className="flex items-center space-x-3 pl-6 border-l border-slate-200">
                     <div className="text-right hidden md:block">
-                        <p className="text-sm font-medium text-slate-900">Amit Web Works</p>
-                        <p className="text-xs text-slate-500">Admin</p>
+                        <p className="text-sm font-medium text-slate-900">{name}</p>
+                        <p className="text-xs text-slate-500">User</p>
                     </div>
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold ring-2 ring-white">
-                        A
+                        {name.charAt(0)}
                     </div>
                 </div>
             </div>

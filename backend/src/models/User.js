@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
@@ -33,6 +33,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please specify city"],
     },
+    number: {
+      type:Number,
+      required : [true,"Please add a bussiness number"],
+    }
   },
   {
     timestamps: true,
@@ -59,4 +63,5 @@ const userSchema = new mongoose.Schema(
 //   return await bcrypt.compare(enteredPassword, this.password);
 // };
 
-module.exports = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+export { User };

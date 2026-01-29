@@ -1,104 +1,102 @@
-const User = require('../models/User');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+import { User } from "../models/User.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 // Generate JWT
 const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET || 'secret123', {
-        expiresIn: '30d',
-    });
+  return jwt.sign({ id }, process.env.JWT_SECRET || "secret123", {
+    expiresIn: "30d",
+  });
 };
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
-    const { name, email, password, businessName, city } = req.body;
+  const { name, email, password, businessName, city,number } = req.body;
 
-    try {
-        if (!name || !email || !password || !businessName || !city) {
-            return res.status(400).json({ message: 'Please add all fields' });
-        }
-
-        const userExists = await User.findOne({ email });
-
-        if (userExists) {
-            return res.status(400).json({ message: 'User already exists' });
-        }
-
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        const user = await User.create({
-            name,
-            email,
-            password: hashedPassword,
-            businessName,
-            city
-        });
-
-        if (user) {
-            res.status(201).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                businessName: user.businessName,
-                city: user.city,
-                token: generateToken(user._id)
-            });
-        } else {
-            res.status(400).json({ message: 'Invalid user data' });
-        }
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+  try {
+    if (!name || !email || !password || !businessName || !city) {
+      return res.status(400).json({ message: "Please add all fields" });
     }
+
+    const userExists = await User.findOne({ email });
+
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      businessName,
+      city,
+      number,
+    });
+
+    if (user) {
+      res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        businessName: user.businessName,
+        city: user.city,
+        number: user.number,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(400).json({ message: "Invalid user data" });
+    }
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };
 
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = async (req, res) => {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
-    try {
-        const user = await User.findOne({ email }).select('+password');
+  try {
+    const user = await User.findOne({ email }).select("+password");
 
-        if (user && (await bcrypt.compare(password, user.password))) {
-            res.json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                businessName: user.businessName,
-                city: user.city,
-                token: generateToken(user._id)
-            });
-        } else {
-            res.status(400).json({ message: 'Invalid credentials' });
-        }
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+    if (user && (await bcrypt.compare(password, user.password))) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        businessName: user.businessName,
+        city: user.city,
+        number: user.number,
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(400).json({ message: "Invalid credentials" });
     }
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
 };
 
 // @desc    Get current user
 // @route   GET /api/auth/me
 // @access  Private
 const getMe = async (req, res) => {
-    res.status(200).json(req.user);
+  res.status(200).json(req.user);
 };
 
 // @desc    Logout user
 // @route   POST /api/auth/logout
 // @access  Public (frontend handles token removal)
 const logoutUser = (req, res) => {
-    // Stateless auth doesn't require backend logout, but we can send a 200 OK.
-    res.status(200).json({ message: 'Logged out successfully' });
+  // Stateless auth doesn't require backend logout, but we can send a 200 OK.
+  res.status(200).json({ message: "Logged out successfully" });
 };
 
-module.exports = {
-    registerUser,
-    loginUser,
-    logoutUser, // Kept for compatibility but simple
-    getMe
-};
+export { registerUser, loginUser, logoutUser, getMe };

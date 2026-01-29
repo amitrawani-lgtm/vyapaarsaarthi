@@ -1,14 +1,35 @@
+import axios from "axios";
 import { Search, Filter, Eye, MoreHorizontal, ArrowUpDown, Calendar } from 'lucide-react';
+import { useState } from "react";
+import { useEffect } from 'react';
 
 export const Orders = () => {
-  const orders = [
-    { id: "#ORD-7829", customer: "Rahul Sharma", date: "Jan 18, 2026", amount: "₹ 4,200", status: "Completed", items: 3 },
-    { id: "#ORD-7830", customer: "Priya Singh", date: "Jan 18, 2026", amount: "₹ 1,850", status: "Pending", items: 1 },
-    { id: "#ORD-7831", customer: "Amit Patel", date: "Jan 17, 2026", amount: "₹ 12,400", status: "Processing", items: 8 },
-    { id: "#ORD-7832", customer: "Sneha Gupta", date: "Jan 17, 2026", amount: "₹ 890", status: "Cancelled", items: 1 },
-    { id: "#ORD-7833", customer: "Vikram Malhotra", date: "Jan 16, 2026", amount: "₹ 3,500", status: "Completed", items: 2 },
-    { id: "#ORD-7834", customer: "Anjali Desai", date: "Jan 16, 2026", amount: "₹ 6,200", status: "Completed", items: 4 },
-  ];
+  // const orders = [
+  //   { id: "#ORD-7829", customer: "Rahul Sharma", date: "Jan 18, 2026", amount: "₹ 4,200", status: "Completed", items: 3 },
+  //   { id: "#ORD-7830", customer: "Priya Singh", date: "Jan 18, 2026", amount: "₹ 1,850", status: "Pending", items: 1 },
+  //   { id: "#ORD-7831", customer: "Amit Patel", date: "Jan 17, 2026", amount: "₹ 12,400", status: "Processing", items: 8 },
+  //   { id: "#ORD-7832", customer: "Sneha Gupta", date: "Jan 17, 2026", amount: "₹ 890", status: "Cancelled", items: 1 },
+  //   { id: "#ORD-7833", customer: "Vikram Malhotra", date: "Jan 16, 2026", amount: "₹ 3,500", status: "Completed", items: 2 },
+  //   { id: "#ORD-7834", customer: "Anjali Desai", date: "Jan 16, 2026", amount: "₹ 6,200", status: "Completed", items: 4 },
+  // ];
+
+  const [orders,setOrders] = useState([]);
+  useEffect(()=>{
+      const fetchOrders = async()=>{
+        try{
+          const response = await axios.get("http://localhost:8080/api/order",{
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        console.log(response.data);
+        setOrders(response.data); 
+        }catch(err){
+          console.error(`error in fecting Orders ${err}`);
+        }
+       }
+    fetchOrders();
+},[]);
 
   return (
     <div className="space-y-6">
@@ -56,7 +77,7 @@ export const Orders = () => {
             <thead className="bg-slate-50 text-slate-900 uppercase font-semibold border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4">Order ID</th>
-                <th className="px-6 py-4">Customer</th>
+                <th className="px-6 py-4">Customer number</th>
                 <th className="px-6 py-4">Date</th>
                 <th className="px-6 py-4">Items</th>
                 <th className="px-6 py-4">Total</th>
@@ -67,20 +88,20 @@ export const Orders = () => {
             <tbody className="divide-y divide-slate-100">
               {orders.map((order) => (
                 <tr key={order.id} className="hover:bg-slate-50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-slate-900">{order.id}</td>
+                  <td className="px-6 py-4 font-medium text-slate-900">{order.orderId}</td>
                   <td className="px-6 py-4 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
+                    {/* <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600">
                       {order.customer.charAt(0)}
-                    </div>
-                    {order.customer}
+                    </div> */}
+                    {order.buyerPhone}
                   </td>
-                  <td className="px-6 py-4">{order.date}</td>
-                  <td className="px-6 py-4">{order.items} items</td>
-                  <td className="px-6 py-4 font-medium text-slate-800">{order.amount}</td>
+                  <td className="px-6 py-4">{new Date(order.createdAt).toLocaleDateString()}</td>
+                  <td className="px-6 py-4">{order.items.length} items</td>
+                  <td className="px-6 py-4 font-medium text-slate-800">{order.totalAmount}</td>
                   <td className="px-6 py-4">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${order.status === 'Completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                        order.status === 'Processing' ? 'bg-blue-50 text-blue-600 border-blue-100' :
-                          order.status === 'Cancelled' ? 'bg-rose-50 text-rose-600 border-rose-100' :
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${order.status === 'completed' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                        order.status === 'processing' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                          order.status === 'cancelled' ? 'bg-rose-50 text-rose-600 border-rose-100' :
                             'bg-amber-50 text-amber-600 border-amber-100'
                       }`}>
                       {order.status}

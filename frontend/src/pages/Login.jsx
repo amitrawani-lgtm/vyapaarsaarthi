@@ -11,6 +11,7 @@ export default function Login() {
     name: "",
     businessName: "",
     city: "",
+    number: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -66,9 +67,10 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div className="space-y-5 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <InputGroup label="Full Name" placeholder="Roger Gerrard" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
-                <InputGroup label="Business Name" placeholder="SelloStore" value={formData.businessName} onChange={(e) => setFormData({ ...formData, businessName: e.target.value })} />
+                <InputGroup label="Full Name" placeholder="full name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+                <InputGroup label="Business Name" placeholder="Bussiness name" value={formData.businessName} onChange={(e) => setFormData({ ...formData, businessName: e.target.value })} />
                 <InputGroup label="City" placeholder="Mumbai" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
+                <InputGroup label="number" placeholder="number" value={formData.number} onChange={(e) => setFormData({ ...formData, number: e.target.value })} />
               </div>
             )}
 
