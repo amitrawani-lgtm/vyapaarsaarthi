@@ -1,7 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import {connectDB} from "./config/db.js";
+import { connectDB } from "./config/db.js";
 import orderRoute from "./routes/orderRoute.js";
 import authRoutes from "./routes/authRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
@@ -9,7 +9,7 @@ import productRoute from "./routes/productRoute.js"
 import aiRoutes from "./routes/aiRoutes.js";
 const app = express();
 
-// Middleware
+
 app.use(
   cors({
     origin: "*",          // allow all origins (DEV ONLY)
@@ -20,8 +20,7 @@ app.use(
       "Origin",
       "Accept",
     ]
-    // origin: "http://localhost:5173", // Vite default port
-    // credentials: true,
+    
   }),
 );
 app.use(express.json());
@@ -29,11 +28,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/auth", authRoutes);
-// app.use('/api/ai', require('./routes/aiRoutes'));
+
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/order", orderRoute);
-app.use("/api/product",productRoute);
-app.use("/api/ai",aiRoutes);
+app.use("/api/product", productRoute);
+app.use("/api/ai", aiRoutes);
 
 // Basic Routes
 app.get("/", (req, res) => {
@@ -46,10 +45,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Server Error", error: err.message });
 });
 
-app.listen("8080",()=>{
+app.listen(process.env.PORT || 5000, () => {
   // Database Connection
   connectDB();
-  console.log("listing the the port 8080");
+  console.log(`Server running on port ${process.env.PORT || 5000}`);
 })
 
 export default app;

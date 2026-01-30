@@ -9,9 +9,7 @@ const generateToken = (id) => {
   });
 };
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
+
 const registerUser = async (req, res) => {
   const { name, email, password, businessName, city,number } = req.body;
 
@@ -57,9 +55,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Login user
-// @route   POST /api/auth/login
-// @access  Public
+
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -84,18 +80,13 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Get current user
-// @route   GET /api/auth/me
-// @access  Private
+
 const getMe = async (req, res) => {
   res.status(200).json(req.user);
 };
 
-// @desc    Logout user
-// @route   POST /api/auth/logout
-// @access  Public (frontend handles token removal)
+
 const logoutUser = (req, res) => {
-  // Stateless auth doesn't require backend logout, but we can send a 200 OK.
   res.status(200).json({ message: "Logged out successfully" });
 };
 

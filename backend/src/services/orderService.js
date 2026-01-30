@@ -34,11 +34,12 @@ const createOrder = async (orderData, userId) => {
   }
 
   const order = await Order.create({
+    shopkeeper: userId,
     user: userId,
     customerName: orderData.customerName,
     items,
     totalAmount,
-    status: "Completed",
+    status: "completed",
   });
 
   return order;

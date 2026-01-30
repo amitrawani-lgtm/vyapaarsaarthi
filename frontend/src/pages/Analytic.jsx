@@ -11,16 +11,16 @@ import {
 import Box from '@mui/material/Box';
 import { BarChart } from '@mui/x-charts/BarChart';
 
-const Profit = [600,650,620,700,780,1050,850];
-const Revenue = [6500,7200,  6800,  7500,  8200,  11000, 9000 ];
+const Profit = [6000,6500,6200,7000,7800,10500,8500];
+const Revenue = [65000,72000,  68000,  75000,  82000,  110000, 90000 ];
 const xLabels = [
-  'MON',
-  'TUE',
-  'WED',
-  'THU',
-  'FRI',
-  'SAT',
-  'SUN',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEPT',
+  'OCT',
+  'NOV',
+  'DEC',
 ];
 
 export default function Analytics() {

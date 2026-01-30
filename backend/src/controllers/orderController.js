@@ -60,7 +60,7 @@ export const createOrder = async (req, res) => {
   res.status(201).json(order);
 };
 
-export const getOrderCondroller = async(req,res)=>{
-   const orders = await Order.find({shopkeeper: req.user._id});
-   res.send(orders);
+export const getOrderCondroller = async (req, res) => {
+  const orders = await Order.find({ shopkeeper: req.user._id });
+  res.send(orders);
 }

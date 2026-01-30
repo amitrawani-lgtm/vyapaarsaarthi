@@ -3,6 +3,10 @@ import { ArrowUpRight, ArrowDownRight, IndianRupee, ShoppingBag, Package, Trendi
 import { cn } from '../lib/utils';
 import api from '../api/axios';
 
+import Box from '@mui/material/Box';
+import { BarChart } from '@mui/x-charts/BarChart';
+
+
 const StatCard = ({ title, value, change, trend, icon: Icon, color }) => (
     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow duration-300">
         <div className="flex items-center justify-between mb-4">
@@ -50,6 +54,18 @@ export default function Dashboard() {
 
         fetchStats();
     }, []);
+
+    const Profit = [600,650,620,700,780,stats.netProfit];
+     const Revenue = [6500,7200,  6800,  7500,  8200,stats.totalSales];
+      const xLabels = [
+    'SUN',
+    'MON',
+    'TUE',
+    'WED',
+    'THR',
+    'FRI',
+    'SAT',
+     ];
 
     if (loading) {
         return <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div></div>;
@@ -114,12 +130,25 @@ export default function Dashboard() {
 
             {/* Recent Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
-                    <h3 className="text-lg font-bold text-slate-800 mb-4">Sales Analytics</h3>
-                    <div className="h-64 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 border border-dashed border-slate-200">
-                        Graph Placeholder
-                    </div>
-                </div>
+                <div className="lg:col-span-2 bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-semibold text-slate-900">
+                Sale Analytics
+                </h3>
+            </div>
+
+          {/* CSS Bar Chart Simulation */}
+          <Box sx={{ width: '100%', height: 300 }}>
+          <BarChart
+           series={[
+          { data: Revenue, label: 'Revenue', id: 'pvId' },
+          { data: Profit, label: 'Profit', id: 'uvId' },
+          ]}
+            xAxis={[{ data: xLabels, height: 28 }]}
+            yAxis={[{ width: 50 }]}
+          />
+          </Box>
+       </div>
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                     <h3 className="text-lg font-bold text-slate-800 mb-4">Recent Orders</h3>
                     <div className="space-y-4">
